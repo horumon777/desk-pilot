@@ -111,7 +111,9 @@ export async function GET(req: NextRequest) {
       >
         {/* Desk background image */}
         {deskImageSrc && (
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            alt=""
             src={deskImageSrc}
             style={{
               position: "absolute",
@@ -143,7 +145,6 @@ export async function GET(req: NextRequest) {
             borderRadius: "32px",
             padding: "48px 56px",
             background: `linear-gradient(135deg, ${data.from}, ${data.to})`,
-            position: "relative",
             overflow: "hidden",
             flex: "0 0 460px",
             height: "100%",
