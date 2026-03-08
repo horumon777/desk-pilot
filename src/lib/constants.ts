@@ -53,7 +53,7 @@ export const DIAGNOSIS_QUESTIONS: DiagnosisQuestion[] = [
         id: "q2_a2",
         label: "所有感と安心",
         icon: "👑",
-        description: "「ここは俺の城だ」——自分だけの領域に包まれる",
+        description: "「ここは自分の城だ」——自分だけの領域に包まれる",
         scoreContributions: { aesthetics: 4, ergonomics: 3 },
       },
       {
@@ -102,7 +102,7 @@ export const DIAGNOSIS_QUESTIONS: DiagnosisQuestion[] = [
         id: "q3_a4",
         label: "空間の格",
         icon: "🏛️",
-        description: "自分のステージにふさわしい環境。空間が男の器を語る",
+        description: "自分のステージにふさわしい環境。空間が器を語る",
         scoreContributions: { aesthetics: 4, ergonomics: 2, focus: 1 },
       },
     ],
@@ -130,7 +130,7 @@ export const DIAGNOSIS_QUESTIONS: DiagnosisQuestion[] = [
         id: "q4_a3",
         label: "テクノロジー武装",
         icon: "🔮",
-        description: "最先端で武装する合理主義。道具が俺を強くする",
+        description: "最先端で武装する合理主義。道具が自分を強くする",
         scoreContributions: { productivity: 5, focus: 2 },
       },
       {
@@ -214,7 +214,7 @@ export const DIAGNOSIS_QUESTIONS: DiagnosisQuestion[] = [
   },
   {
     id: "q7_philosophy",
-    questionText: "「男を磨く」とは、\nあなたにとって何ですか？",
+    questionText: "「自分を磨く」とは、\nあなたにとって何ですか？",
     targetAxes: ["productivity", "aesthetics", "ergonomics", "maintenance"],
     options: [
       {
@@ -242,7 +242,7 @@ export const DIAGNOSIS_QUESTIONS: DiagnosisQuestion[] = [
         id: "q7_a4",
         label: "空間を整えること",
         icon: "🪞",
-        description: "環境は自分を映す鏡。空間の質が、男の質を決める",
+        description: "環境は自分を映す鏡。空間の質が、自分の質を決める",
         scoreContributions: { aesthetics: 3, maintenance: 3, focus: 2 },
       },
     ],

@@ -130,7 +130,7 @@ const PRIORITY_ITEMS: Record<
   ergonomics: {
     product: "Herman Miller Aeron Chair Remastered",
     brand: "Herman Miller",
-    why: "世界中のエグゼクティブが選ぶ、人体工学の最高峰。腰痛予防、集中力維持、10年保証。ここに投資しない男は、自分の身体を舐めている。",
+    why: "世界中のエグゼクティブが選ぶ、人体工学の最高峰。腰痛予防、集中力維持、10年保証。ここに投資しないのは、自分の身体を軽視している証拠だ。",
     searchQuery: "ハーマンミラー アーロンチェア リマスタード",
     priceRange: "¥178,000〜¥228,000",
     scoreBoost: 10,
@@ -233,7 +233,7 @@ function getProvocativeMessage(score: number) {
     };
   if (score <= 79)
     return {
-      message: "悪くはない。ただし、デキる男のデスクとは程遠い。",
+      message: "悪くはない。ただし、デキる人のデスクとは程遠い。",
       sub: "あと一歩の投資が、仕事の格を決定的に変える。",
     };
   return {
@@ -340,7 +340,7 @@ export default function ResultPage() {
   const handleShareX = useCallback(() => {
     if (!analysis) return;
     const shareUrl = buildShareUrl();
-    const text = `俺のデスクタイプは「${analysis.deskTypeInfo.name}」だった。\nスコア: ${analysis.currentTotal}/100点\n\n#DESKAI #デスク診断`;
+    const text = `私のデスクタイプは「${analysis.deskTypeInfo.name}」だった。\nスコア: ${analysis.currentTotal}/100点\n\n#DESKAI #デスク診断`;
     const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(xUrl, "_blank", "noopener,noreferrer,width=550,height=420");
   }, [analysis, buildShareUrl]);

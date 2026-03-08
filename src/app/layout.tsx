@@ -9,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "DESK AI — 男を磨くデスク診断",
+  title: "DESK AI — デスク環境診断",
   description:
-    "AIがあなたの仕事環境を診断し、男を磨くデスクスコアを可視化。最適なアイテムTOP10ランキングを即時生成。",
+    "AIがあなたの仕事環境を診断し、デスクスコアを可視化。最適なアイテムTOP10ランキングを即時生成。",
 };
 
 export default function RootLayout({

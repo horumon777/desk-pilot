@@ -20,7 +20,7 @@ export async function generateMetadata({
   const typeName = DESK_TYPE_NAMES[type] || "上昇志向型";
 
   const title = `デスクスコア ${score}点 — ${typeName} | DESK AI`;
-  const description = `俺のデスクタイプは「${typeName}」。スコアは${score}/100点。あなたのデスクは何点？AIが60秒で診断します。`;
+  const description = `私のデスクタイプは「${typeName}」。スコアは${score}/100点。あなたのデスクは何点？AIが60秒で診断します。`;
 
   const ogParams = new URLSearchParams();
   ogParams.set("s", score);
