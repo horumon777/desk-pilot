@@ -1,0 +1,86 @@
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || "",
+});
+
+export async function POST(request: Request) {
+  try {
+    const { messages, systemPrompt } = await request.json();
+
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return new Response(JSON.stringify({ error: "Invalid messages" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (!systemPrompt) {
+      return new Response(
+        JSON.stringify({ error: "Missing system prompt" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      const fallbackText =
+        "現在AIアドバイザーは利用できません。環境変数 ANTHROPIC_API_KEY を設定してください。";
+      return new Response(fallbackText, {
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+      });
+    }
+
+    const stream = client.messages.stream({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1500,
+      temperature: 0.7,
+      system: systemPrompt,
+      messages: messages.map((m: { role: string; content: string }) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+    });
+
+    // Convert Anthropic SDK stream to Web ReadableStream
+    const encoder = new TextEncoder();
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        try {
+          stream.on("text", (text) => {
+            controller.enqueue(encoder.encode(text));
+          });
+
+          stream.on("error", (error) => {
+            console.error("Stream error:", error);
+            controller.error(error);
+          });
+
+          // Wait for stream to complete
+          await stream.finalMessage();
+          controller.close();
+        } catch (error) {
+          console.error("Stream processing error:", error);
+          try {
+            controller.error(error);
+          } catch {
+            // controller may already be closed
+          }
+        }
+      },
+    });
+
+    return new Response(readableStream, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
+  } catch (error) {
+    console.error("Chat API error:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
