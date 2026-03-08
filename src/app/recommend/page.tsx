@@ -90,11 +90,11 @@ function RecommendContent() {
     [answers, cache]
   );
 
-  useEffect(() => {
+  const handleFetch = useCallback(() => {
     if (answers) {
       fetchRecommendations(activeCategory);
     }
-  }, [activeCategory, answers, fetchRecommendations]);
+  }, [answers, activeCategory, fetchRecommendations]);
 
   const handlePurchase = (item: RecommendItem) => {
     const history = getStorageItem<PurchaseRecord[]>(
@@ -181,7 +181,7 @@ function RecommendContent() {
 
         {/* Rankings */}
         <div className="space-y-3">
-          {isLoading || !items ? (
+          {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
@@ -197,6 +197,21 @@ function RecommendContent() {
                 </div>
               </div>
             ))
+          ) : !items ? (
+            <div className="text-center py-16">
+              <p className="text-neutral-400 text-sm mb-6">
+                「{CATEGORY_LABELS[activeCategory]}」のおすすめランキングを<br />AIが生成します
+              </p>
+              <button
+                onClick={handleFetch}
+                className="inline-flex items-center gap-2 bg-neutral-900 text-white px-8 py-3.5 rounded-full text-sm font-bold tracking-wide hover:bg-neutral-800 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                ランキングを取得する
+              </button>
+            </div>
           ) : (
             items.map((item) => (
               <div
