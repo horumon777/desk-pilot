@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
@@ -111,7 +112,6 @@ export async function GET(req: NextRequest) {
       >
         {/* Desk background image */}
         {deskImageSrc && (
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             alt=""
             src={deskImageSrc}
