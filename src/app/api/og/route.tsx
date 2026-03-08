@@ -11,20 +11,60 @@ const AXIS_LABELS: Record<string, string> = {
   m: "習慣",
 };
 
-const DESK_TYPE_NAMES: Record<string, string> = {
-  pragmatic: "質実剛健型",
-  luxury: "ラグジュアリー型",
-  minimalist: "ミニマリスト型",
-  gadgetOtaku: "ガジェットオタク型",
-  aspiring: "上昇志向型",
+const RANK_DATA: Record<
+  string,
+  { label: string; tagline: string; from: string; to: string }
+> = {
+  S: {
+    label: "伝説のデスク",
+    tagline: "この環境に、死角はない。",
+    from: "#b8860b",
+    to: "#ffd700",
+  },
+  A: {
+    label: "プロのデスク",
+    tagline: "あと一歩で、伝説になる。",
+    from: "#059669",
+    to: "#34d399",
+  },
+  B: {
+    label: "上級者のデスク",
+    tagline: "悪くない。だが、まだ上がある。",
+    from: "#2563eb",
+    to: "#60a5fa",
+  },
+  C: {
+    label: "発展途上のデスク",
+    tagline: "可能性はある。あとは行動だけだ。",
+    from: "#d97706",
+    to: "#fbbf24",
+  },
+  D: {
+    label: "改革が必要なデスク",
+    tagline: "今日が、変わる日だ。",
+    from: "#dc2626",
+    to: "#f87171",
+  },
 };
+
+function getRankFromScore(score: number): string {
+  if (score >= 90) return "S";
+  if (score >= 80) return "A";
+  if (score >= 70) return "B";
+  if (score >= 60) return "C";
+  return "D";
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
   const score = parseInt(searchParams.get("s") || "0", 10);
-  const type = searchParams.get("t") || "aspiring";
-  const typeName = DESK_TYPE_NAMES[type] || "上昇志向型";
+  const rankParam = searchParams.get("r");
+  const rank =
+    rankParam && RANK_DATA[rankParam.toUpperCase()]
+      ? rankParam.toUpperCase()
+      : getRankFromScore(score);
+  const data = RANK_DATA[rank] || RANK_DATA.D;
 
   const axes = {
     f: parseInt(searchParams.get("f") || "0", 10),
@@ -34,9 +74,6 @@ export async function GET(req: NextRequest) {
     m: parseInt(searchParams.get("m") || "0", 10),
   };
 
-  const scoreColor =
-    score >= 80 ? "#16a34a" : score >= 60 ? "#d97706" : "#dc2626";
-
   return new ImageResponse(
     (
       <div
@@ -44,132 +81,189 @@ export async function GET(req: NextRequest) {
           width: "1200px",
           height: "630px",
           display: "flex",
-          flexDirection: "column",
-          backgroundColor: "#ffffff",
+          background: "#f5f5f5",
           fontFamily: "sans-serif",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "40px",
+          padding: "48px",
         }}
       >
-        {/* Top bar */}
+        {/* Left: Rank Card */}
         <div
           style={{
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "space-between",
-            padding: "32px 48px",
-            borderBottom: "1px solid #e5e5e5",
+            justifyContent: "center",
+            borderRadius: "32px",
+            padding: "48px 56px",
+            background: `linear-gradient(135deg, ${data.from}, ${data.to})`,
+            position: "relative",
+            overflow: "hidden",
+            flex: "0 0 460px",
+            height: "100%",
           }}
         >
+          {/* Background rank letter */}
           <div
             style={{
+              position: "absolute",
+              top: "-40px",
+              right: "-20px",
+              fontSize: "360px",
+              fontWeight: 900,
+              color: "rgba(255,255,255,0.1)",
+              lineHeight: 1,
               display: "flex",
-              alignItems: "center",
-              gap: "8px",
             }}
           >
-            <span
-              style={{
-                fontSize: "24px",
-                fontWeight: 900,
-                color: "#171717",
-                letterSpacing: "-0.5px",
-              }}
-            >
-              DESK AI
-            </span>
+            {rank}
           </div>
-          <span
-            style={{
-              fontSize: "14px",
-              color: "#a3a3a3",
-              letterSpacing: "2px",
-              textTransform: "uppercase" as const,
-            }}
-          >
-            Desk Environment Score
-          </span>
-        </div>
 
-        {/* Main content */}
-        <div
-          style={{
-            display: "flex",
-            flex: 1,
-            padding: "40px 48px",
-            gap: "48px",
-          }}
-        >
-          {/* Left: Score */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              justifyContent: "center",
-              flex: 1,
+              position: "relative",
+              zIndex: 1,
             }}
           >
             <span
               style={{
-                fontSize: "160px",
-                fontWeight: 900,
-                color: "#171717",
-                lineHeight: 1,
-                letterSpacing: "-8px",
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "rgba(255,255,255,0.65)",
+                letterSpacing: "4px",
+                textTransform: "uppercase" as const,
+                marginBottom: "20px",
               }}
             >
-              {score}
+              Desk Environment Score
             </span>
-            <span
+
+            <div
               style={{
-                fontSize: "28px",
-                color: "#a3a3a3",
-                fontWeight: 500,
-                marginTop: "-8px",
+                display: "flex",
+                alignItems: "flex-end",
+                gap: "8px",
+                marginBottom: "16px",
               }}
             >
-              / 100
-            </span>
+              <span
+                style={{
+                  fontSize: "140px",
+                  fontWeight: 900,
+                  color: "#ffffff",
+                  lineHeight: 1,
+                  letterSpacing: "-6px",
+                }}
+              >
+                {score}
+              </span>
+              <span
+                style={{
+                  fontSize: "28px",
+                  color: "rgba(255,255,255,0.5)",
+                  marginBottom: "16px",
+                }}
+              >
+                /100
+              </span>
+            </div>
+
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "8px",
-                marginTop: "16px",
-                padding: "8px 20px",
+                gap: "10px",
+                background: "rgba(255,255,255,0.18)",
                 borderRadius: "999px",
-                backgroundColor: "#f5f5f5",
+                padding: "8px 20px",
+                marginBottom: "14px",
               }}
             >
-              <div
-                style={{
-                  width: "10px",
-                  height: "10px",
-                  borderRadius: "50%",
-                  backgroundColor: scoreColor,
-                }}
-              />
               <span
                 style={{
-                  fontSize: "16px",
-                  fontWeight: 700,
-                  color: "#171717",
+                  fontSize: "20px",
+                  fontWeight: 900,
+                  color: "#ffffff",
                 }}
               >
-                {typeName}
+                {rank}ランク
+              </span>
+              <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px" }}>
+                —
+              </span>
+              <span
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  color: "#ffffff",
+                }}
+              >
+                {data.label}
               </span>
             </div>
-          </div>
 
-          {/* Right: Axis bars */}
+            <span
+              style={{
+                fontSize: "14px",
+                color: "rgba(255,255,255,0.65)",
+                fontStyle: "italic",
+              }}
+            >
+              「{data.tagline}」
+            </span>
+          </div>
+        </div>
+
+        {/* Right: Axis + Branding */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            flex: 1,
+            height: "100%",
+          }}
+        >
+          {/* Brand */}
+          <span
+            style={{
+              fontSize: "18px",
+              fontWeight: 900,
+              color: "#171717",
+              letterSpacing: "-0.5px",
+            }}
+          >
+            DESK AI
+          </span>
+
+          {/* Axis bars */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              justifyContent: "center",
-              flex: 1,
-              gap: "16px",
+              gap: "20px",
+              background: "#ffffff",
+              borderRadius: "20px",
+              padding: "32px",
+              border: "1px solid #e5e5e5",
             }}
           >
+            <span
+              style={{
+                fontSize: "10px",
+                color: "#a3a3a3",
+                letterSpacing: "3px",
+                textTransform: "uppercase" as const,
+                marginBottom: "4px",
+              }}
+            >
+              Axis Breakdown
+            </span>
             {Object.entries(axes).map(([key, value]) => (
               <div
                 key={key}
@@ -181,10 +275,12 @@ export async function GET(req: NextRequest) {
               >
                 <span
                   style={{
-                    fontSize: "14px",
+                    fontSize: "13px",
                     color: "#737373",
-                    width: "56px",
+                    width: "52px",
                     textAlign: "right" as const,
+                    flexShrink: 0,
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {AXIS_LABELS[key]}
@@ -193,9 +289,9 @@ export async function GET(req: NextRequest) {
                   style={{
                     display: "flex",
                     flex: 1,
-                    height: "24px",
+                    height: "8px",
                     backgroundColor: "#f5f5f5",
-                    borderRadius: "12px",
+                    borderRadius: "4px",
                     overflow: "hidden",
                   }}
                 >
@@ -203,17 +299,18 @@ export async function GET(req: NextRequest) {
                     style={{
                       width: `${(value / 20) * 100}%`,
                       height: "100%",
-                      backgroundColor: "#171717",
-                      borderRadius: "12px",
+                      background: `linear-gradient(90deg, ${data.from}, ${data.to})`,
+                      borderRadius: "4px",
                     }}
                   />
                 </div>
                 <span
                   style={{
-                    fontSize: "16px",
+                    fontSize: "14px",
                     fontWeight: 700,
                     color: "#171717",
-                    width: "40px",
+                    width: "28px",
+                    textAlign: "right" as const,
                   }}
                 >
                   {value}
@@ -221,26 +318,15 @@ export async function GET(req: NextRequest) {
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Bottom CTA */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "24px 48px",
-            borderTop: "1px solid #e5e5e5",
-            gap: "8px",
-          }}
-        >
-          <span style={{ fontSize: "15px", color: "#a3a3a3" }}>
-            あなたのデスクは何点？ →
-          </span>
+          {/* CTA */}
           <span
-            style={{ fontSize: "15px", color: "#171717", fontWeight: 700 }}
+            style={{
+              fontSize: "14px",
+              color: "#a3a3a3",
+            }}
           >
-            desk-ai.vercel.app
+            あなたのデスクは何ランク？ → desk-ai.vercel.app
           </span>
         </div>
       </div>

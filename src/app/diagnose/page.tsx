@@ -3,8 +3,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DIAGNOSIS_QUESTIONS } from "@/lib/constants";
-import { setStorageItem } from "@/lib/storage";
-import { STORAGE_KEYS, DiagnosisResult } from "@/types";
+import { setStorageItem, getStorageItem } from "@/lib/storage";
+import { STORAGE_KEYS, DiagnosisResult, UserProfile } from "@/types";
 import { Header } from "@/components/header";
 
 export default function DiagnosePage() {
@@ -40,10 +40,14 @@ export default function DiagnosePage() {
         setTimeout(async () => {
           setIsSubmitting(true);
           try {
+            const profile = getStorageItem<UserProfile | null>(
+              STORAGE_KEYS.USER_PROFILE,
+              null
+            );
             const res = await fetch("/api/diagnose", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ answers: newAnswers }),
+              body: JSON.stringify({ answers: newAnswers, profile }),
             });
             if (!res.ok) throw new Error("Diagnosis failed");
             const result: DiagnosisResult = await res.json();

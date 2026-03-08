@@ -4,13 +4,13 @@ import Link from "next/link";
 import { Header } from "@/components/header";
 import { useEffect, useState } from "react";
 import { getStorageItem } from "@/lib/storage";
-import { STORAGE_KEYS, DiagnosisResult } from "@/types";
+import { STORAGE_KEYS, DiagnosisResult, UserProfile } from "@/types";
 
 const FEATURES = [
   {
     icon: "🧠",
     title: "AI診断",
-    description: "7つの質問からデスク環境を5軸で数値化",
+    description: "15の質問からデスク環境を5軸で数値化",
   },
   {
     icon: "🛒",
@@ -30,7 +30,7 @@ const FEATURES = [
 ];
 
 const STEPS = [
-  { num: "01", label: "診断する", desc: "7つの質問に直感で回答" },
+  { num: "01", label: "診断する", desc: "15の質問にサクッと回答" },
   { num: "02", label: "分析を見る", desc: "5軸レーダーチャートで弱点を把握" },
   { num: "03", label: "厳選アイテムを選ぶ", desc: "AIが選んだTOP10から購入" },
   { num: "04", label: "進化を実感", desc: "スコアが上がり、環境が変わる" },
@@ -39,6 +39,7 @@ const STEPS = [
 export default function Home() {
   const [hasResult, setHasResult] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+  const [hasProfile, setHasProfile] = useState(true); // default true to avoid flash
 
   useEffect(() => {
     const result = getStorageItem<DiagnosisResult | null>(
@@ -49,6 +50,11 @@ export default function Home() {
       setHasResult(true);
       setScore(result.totalScore);
     }
+    const profile = getStorageItem<UserProfile | null>(
+      STORAGE_KEYS.USER_PROFILE,
+      null
+    );
+    setHasProfile(!!profile && !!profile.ageRange);
   }, []);
 
   return (
@@ -81,7 +87,7 @@ export default function Home() {
             <p className="mt-6 text-neutral-500 text-lg leading-relaxed max-w-lg">
               AIがあなたの仕事スタイルを診断し、最適なデスク環境を設計。
               <br className="hidden md:block" />
-              7つの質問、約60秒で完了。
+              15の質問、約2分で完了。
             </p>
 
             <div className="flex flex-col sm:flex-row items-start gap-3 mt-8">
@@ -120,6 +126,44 @@ export default function Home() {
               )}
             </div>
           </div>
+
+          {/* Profile prompt */}
+          {!hasProfile && (
+            <Link
+              href="/profile"
+              className="mt-8 inline-flex items-center gap-2.5 bg-neutral-50 border border-neutral-200 rounded-full px-5 py-2.5 hover:border-neutral-300 hover:bg-neutral-100 transition-all group"
+            >
+              <svg
+                className="w-4 h-4 text-neutral-400 group-hover:text-neutral-600 transition-colors"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.8}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+              <span className="text-sm text-neutral-500 group-hover:text-neutral-700 transition-colors">
+                プロフィールを設定して診断精度UP
+              </span>
+              <svg
+                className="w-3.5 h-3.5 text-neutral-300 group-hover:text-neutral-500 group-hover:translate-x-0.5 transition-all"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </Link>
+          )}
 
           {/* Score preview for returning users */}
           {hasResult && score !== null && (
@@ -224,7 +268,7 @@ export default function Home() {
             あなたのデスク、何点ですか？
           </h2>
           <p className="text-neutral-400 text-sm mb-8 max-w-md mx-auto">
-            7つの質問に答えるだけ。AIがあなたの仕事環境を5つの軸で分析し、
+            15の質問に答えるだけ。AIがあなたのデスク環境を5つの軸で分析し、
             具体的な改善プランを提案します。
           </p>
           <Link

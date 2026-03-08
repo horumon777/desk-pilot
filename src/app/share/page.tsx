@@ -1,13 +1,6 @@
 import type { Metadata } from "next";
 import ShareContent from "./share-content";
-
-const DESK_TYPE_NAMES: Record<string, string> = {
-  pragmatic: "質実剛健型",
-  luxury: "ラグジュアリー型",
-  minimalist: "ミニマリスト型",
-  gadgetOtaku: "ガジェットオタク型",
-  aspiring: "上昇志向型",
-};
+import { getRank, getRankByLetter } from "@/lib/desk-rank";
 
 export async function generateMetadata({
   searchParams,
@@ -15,16 +8,20 @@ export async function generateMetadata({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<Metadata> {
   const params = await searchParams;
-  const score = params.s?.toString() || "0";
-  const type = params.t?.toString() || "aspiring";
-  const typeName = DESK_TYPE_NAMES[type] || "上昇志向型";
+  const score = parseInt(params.s?.toString() || "0", 10);
+  const rankParam = params.r?.toString() || "";
 
-  const title = `デスクスコア ${score}点 — ${typeName} | DESK AI`;
-  const description = `私のデスクタイプは「${typeName}」。スコアは${score}/100点。あなたのデスクは何点？AIが60秒で診断します。`;
+  // Rank: use `r` param if provided, otherwise compute from score
+  const rankInfo = rankParam
+    ? getRankByLetter(rankParam)
+    : getRank(score);
+
+  const title = `デスクスコア ${score}点 — ${rankInfo.rank}ランク | DESK AI`;
+  const description = `${rankInfo.rank}ランク「${rankInfo.label}」達成！スコアは${score}/100点。あなたのデスクは何ランク？`;
 
   const ogParams = new URLSearchParams();
-  ogParams.set("s", score);
-  ogParams.set("t", type);
+  ogParams.set("s", score.toString());
+  ogParams.set("r", rankInfo.rank);
   if (params.f) ogParams.set("f", params.f.toString());
   if (params.e) ogParams.set("e", params.e.toString());
   if (params.p) ogParams.set("p", params.p.toString());
@@ -44,7 +41,7 @@ export async function generateMetadata({
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: `DESK AI スコア ${score}点`,
+          alt: `DESK AI ${rankInfo.rank}ランク スコア ${score}点`,
         },
       ],
       type: "website",

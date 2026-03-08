@@ -26,88 +26,13 @@ import {
 } from "@/types";
 import { Header } from "@/components/header";
 import { toast } from "sonner";
+import { getRank, calculateSubScores } from "@/lib/desk-rank";
 
 // --- Constants ---
 const AVERAGE_SCORE = 72;
 const TOP_30_THRESHOLD = 85;
 
-// --- Desk Type ---
-type DeskType =
-  | "pragmatic"
-  | "luxury"
-  | "minimalist"
-  | "gadgetOtaku"
-  | "aspiring";
-
-const DESK_TYPES: Record<
-  DeskType,
-  { name: string; description: string; weakness: string }
-> = {
-  pragmatic: {
-    name: "質実剛健型",
-    description:
-      "機能と効率を何より重視する、本質主義者。見た目より中身。道具は使い倒してこそ価値がある——そんな信念がデスクに表れている。",
-    weakness:
-      "「見た目への投資」を後回しにしがち。空間の美しさは集中力に直結する。",
-  },
-  luxury: {
-    name: "ラグジュアリー型",
-    description:
-      "質感、ブランド、デザイン——五感を満たす空間でこそ、最高のパフォーマンスが出る。所有する喜びが仕事のモチベーションを底上げする。",
-    weakness:
-      "実用性より所有欲が先行することがある。本当に必要な機能か、冷静な再考を。",
-  },
-  minimalist: {
-    name: "ミニマリスト型",
-    description:
-      "少数精鋭。余計なものを排除し、本当に必要なものだけで戦う。引き算の美学がデスクに宿っている。",
-    weakness:
-      "「足りない」を「ミニマル」と混同していないか。攻めの投資も時には必要だ。",
-  },
-  gadgetOtaku: {
-    name: "ガジェットオタク型",
-    description:
-      "最新テクノロジーとスペックに目がない。デスクは実験場であり、進化し続ける司令塔だ。",
-    weakness:
-      "ケーブルと周辺機器の管理が追いついていない。環境整備が次のレベルへの鍵。",
-  },
-  aspiring: {
-    name: "上昇志向型",
-    description:
-      "今はまだ途上。だが、理想のデスク環境を明確にイメージし、一歩ずつ投資を重ねている。ポテンシャルは最も高い。",
-    weakness: "何から手をつけるか迷いがち。まず一点突破で最大効果を狙え。",
-  },
-};
-
-function classifyDeskType(
-  scores: Record<ScoreAxis, number>,
-  totalScore: number
-): DeskType {
-  const entries = Object.entries(scores) as [ScoreAxis, number][];
-  const sorted = [...entries].sort((a, b) => b[1] - a[1]);
-  const highest = sorted[0][0];
-  const lowest = sorted[sorted.length - 1][0];
-
-  if (totalScore <= 55) return "aspiring";
-  if (highest === "aesthetics") return "luxury";
-  if (highest === "maintenance") return "minimalist";
-  if (
-    (highest === "productivity" || highest === "focus") &&
-    lowest === "maintenance"
-  )
-    return "gadgetOtaku";
-  if (
-    (highest === "productivity" || highest === "focus") &&
-    lowest === "aesthetics"
-  )
-    return "pragmatic";
-  if (highest === "ergonomics" && lowest === "aesthetics") return "pragmatic";
-  if (highest === "ergonomics") return "luxury";
-  if (highest === "productivity") return "pragmatic";
-  if (highest === "focus") return "gadgetOtaku";
-  return "aspiring";
-}
-
+// --- Priority Items ---
 const PRIORITY_ITEMS: Record<
   ScoreAxis,
   {
@@ -162,7 +87,13 @@ const PRIORITY_ITEMS: Record<
 };
 
 // --- Animated Components ---
-function AnimatedScore({ target }: { target: number }) {
+function AnimatedScore({
+  target,
+  className,
+}: {
+  target: number;
+  className?: string;
+}) {
   const [current, setCurrent] = useState(0);
   const ref = useRef<number | null>(null);
 
@@ -183,7 +114,12 @@ function AnimatedScore({ target }: { target: number }) {
   }, [target]);
 
   return (
-    <span className="text-8xl md:text-[10rem] font-black tabular-nums text-neutral-900 leading-none">
+    <span
+      className={
+        className ||
+        "text-8xl md:text-[10rem] font-black tabular-nums leading-none"
+      }
+    >
       {current}
     </span>
   );
@@ -292,7 +228,6 @@ export default function ResultPage() {
   const analysis = useMemo(() => {
     if (!result || !boost) return null;
 
-    // Use boosted scores for current analysis
     const currentTotal = boost.boostedTotalScore;
     const currentScores = boost.boostedAxisScores;
 
@@ -305,8 +240,8 @@ export default function ResultPage() {
       100,
       currentTotal + priorityItem.scoreBoost
     );
-    const deskType = classifyDeskType(currentScores, currentTotal);
-    const deskTypeInfo = DESK_TYPES[deskType];
+    const rank = getRank(currentTotal);
+    const subScores = calculateSubScores(currentScores);
 
     return {
       provocation,
@@ -315,8 +250,8 @@ export default function ResultPage() {
       loss,
       gap,
       predictedScore,
-      deskType,
-      deskTypeInfo,
+      rank,
+      subScores,
       currentTotal,
       currentScores,
     };
@@ -327,7 +262,7 @@ export default function ResultPage() {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const params = new URLSearchParams({
       s: analysis.currentTotal.toString(),
-      t: analysis.deskType,
+      r: analysis.rank.rank,
       f: analysis.currentScores.focus.toString(),
       e: analysis.currentScores.ergonomics.toString(),
       p: analysis.currentScores.productivity.toString(),
@@ -340,7 +275,7 @@ export default function ResultPage() {
   const handleShareX = useCallback(() => {
     if (!analysis) return;
     const shareUrl = buildShareUrl();
-    const text = `私のデスクタイプは「${analysis.deskTypeInfo.name}」だった。\nスコア: ${analysis.currentTotal}/100点\n\n#DESKAI #デスク診断`;
+    const text = `デスク診断やってみた結果…\n\nスコア ${analysis.currentTotal}/100点 · ${analysis.rank.rank}ランク\n「${analysis.rank.tagline}」\n\nあなたのデスク環境は何点？👇\n#DESKAI #デスク診断`;
     const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(xUrl, "_blank", "noopener,noreferrer,width=550,height=420");
   }, [analysis, buildShareUrl]);
@@ -359,7 +294,6 @@ export default function ResultPage() {
 
   const hasPurchaseBoost = boost.totalBoost > 0;
 
-  // Radar data: original + current (boosted)
   const radarData = (Object.keys(AXIS_LABELS) as ScoreAxis[]).map((axis) => ({
     axis: AXIS_LABELS[axis],
     original: result.axisScores[axis],
@@ -371,82 +305,81 @@ export default function ResultPage() {
     <div className="min-h-screen">
       <Header />
       <main className="max-w-3xl mx-auto px-5 py-12">
-        {/* ========== SCORE ========== */}
-        <div className="text-center mb-8">
-          <p className="text-xs font-medium tracking-[0.2em] uppercase text-neutral-400 mb-6">
-            Your Desk Score
-          </p>
-          <div className="flex items-baseline justify-center gap-3">
-            <AnimatedScore target={analysis.currentTotal} />
-            <span className="text-2xl text-neutral-400 font-medium">
-              / 100
+        {/* ========== RANK CARD ========== */}
+        <div
+          className="relative rounded-3xl overflow-hidden p-8 md:p-12 mb-8 text-center"
+          style={{
+            background: `linear-gradient(135deg, ${analysis.rank.gradient.from}, ${analysis.rank.gradient.to})`,
+          }}
+        >
+          {/* Background rank letter decoration */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+            <span className="text-[20rem] md:text-[28rem] font-black text-white/[0.07] leading-none">
+              {analysis.rank.rank}
             </span>
           </div>
-          {hasPurchaseBoost && (
-            <p className="text-emerald-600 text-sm font-medium mt-3">
-              購入による改善{" "}
-              <span className="font-bold">+{boost.totalBoost}点</span>
-              <span className="text-neutral-400 ml-2">
-                （診断時 {result.totalScore}点）
-              </span>
-            </p>
-          )}
-        </div>
 
-        {/* ========== DESK TYPE ========== */}
-        <div className="bg-white rounded-2xl border border-neutral-200 p-8 mb-8 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(180,140,60,0.04),_transparent_70%)] pointer-events-none" />
-          <div className="relative">
-            <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-neutral-400 mb-3">
-              Your Desk Type
+          <div className="relative z-10">
+            <p className="text-xs font-semibold tracking-[0.3em] uppercase text-white/60 mb-6">
+              Your Desk Score
             </p>
-            <h2
-              className="text-3xl md:text-4xl font-black mb-4"
-              style={{ color: "#b08d3e" }}
-            >
-              {analysis.deskTypeInfo.name}
-            </h2>
-            <p className="text-neutral-600 text-sm leading-relaxed max-w-md mx-auto mb-4">
-              {analysis.deskTypeInfo.description}
-            </p>
-            <div className="inline-flex items-center gap-2 bg-neutral-100 rounded-full px-4 py-2 mb-6">
-              <span className="text-xs text-neutral-400">
-                このタイプの弱点：
-              </span>
-              <span className="text-xs text-neutral-700 font-medium">
-                {analysis.deskTypeInfo.weakness}
-              </span>
+
+            <div className="flex items-baseline justify-center gap-3 mb-4">
+              <AnimatedScore
+                target={analysis.currentTotal}
+                className="text-8xl md:text-[10rem] font-black tabular-nums text-white leading-none"
+              />
+              <span className="text-2xl text-white/50 font-medium">/ 100</span>
             </div>
+
+            {hasPurchaseBoost && (
+              <p className="text-white/60 text-sm mb-4">
+                購入による改善{" "}
+                <span className="font-bold text-white/80">
+                  +{boost.totalBoost}点
+                </span>
+                <span className="text-white/40 ml-2">
+                  （診断時 {result.totalScore}点）
+                </span>
+              </p>
+            )}
+
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-5 py-2.5 mb-3">
+                <span className="text-2xl font-black text-white">
+                  {analysis.rank.rank}ランク
+                </span>
+                <span className="text-white/70 text-sm">—</span>
+                <span className="text-white font-bold text-sm">
+                  {analysis.rank.label}
+                </span>
+              </div>
+              <p className="text-white/70 text-sm italic">
+                「{analysis.rank.tagline}」
+              </p>
+            </div>
+
+            {/* Share buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
               <button
                 onClick={handleShareX}
-                className="inline-flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-neutral-800 transition-colors"
+                className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
                 Xでシェアする
               </button>
               <button
                 onClick={handleCopyLink}
-                className="inline-flex items-center gap-2 bg-neutral-100 text-neutral-700 px-5 py-2.5 rounded-full text-sm font-medium hover:bg-neutral-200 transition-colors"
+                className="inline-flex items-center gap-2 bg-white/10 text-white/80 px-5 py-2.5 rounded-full text-sm font-medium hover:bg-white/20 transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-                リンクをコピー
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* ========== PURCHASE IMPACT ========== */}
-        {hasPurchaseBoost && (
-          <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-6 mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
                 <svg
-                  className="w-4 h-4 text-emerald-600"
+                  className="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -455,75 +388,70 @@ export default function ResultPage() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
                   />
                 </svg>
-              </div>
-              <div>
-                <p className="text-sm font-bold text-emerald-800">
-                  購入アイテムによるスコア改善
-                </p>
-                <p className="text-xs text-emerald-600">
-                  診断時 {result.totalScore}点 → 現在{" "}
-                  {analysis.currentTotal}点（
-                  <span className="font-bold">+{boost.totalBoost}点</span>）
-                </p>
-              </div>
-            </div>
-
-            {/* Per-axis boost bars */}
-            <div className="space-y-2 mb-4">
-              {(Object.keys(AXIS_LABELS) as ScoreAxis[]).map((axis) => {
-                const axisBoost = boost.boostsByAxis[axis];
-                if (axisBoost === 0) return null;
-                const original = result.axisScores[axis];
-                const current = analysis.currentScores[axis];
-                return (
-                  <div key={axis} className="flex items-center gap-3">
-                    <span className="text-xs text-neutral-500 w-24 text-right flex-shrink-0">
-                      {AXIS_LABELS[axis]}
-                    </span>
-                    <div className="flex-1 h-2 bg-emerald-100 rounded-full overflow-hidden relative">
-                      <div
-                        className="absolute inset-y-0 left-0 bg-neutral-300 rounded-full"
-                        style={{ width: `${(original / 20) * 100}%` }}
-                      />
-                      <div
-                        className="absolute inset-y-0 left-0 bg-emerald-500 rounded-full"
-                        style={{ width: `${(current / 20) * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-bold text-emerald-700 w-12 flex-shrink-0">
-                      +{axisBoost}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Individual item messages */}
-            <div className="space-y-1.5 pt-3 border-t border-emerald-200">
-              {boost.itemBoosts.map((item, i) => (
-                <div
-                  key={`${item.productName}-${i}`}
-                  className="flex items-center gap-2"
-                >
-                  <span className="text-emerald-500 text-xs">✓</span>
-                  <p className="text-xs text-emerald-800">
-                    <span className="font-semibold">{item.productName}</span>
-                    を買ったことで
-                    <span className="font-bold">{item.axisLabel}</span>
-                    スコアが
-                    <span className="font-bold text-emerald-700">
-                      +{item.boost}点
-                    </span>
-                    上がりました
-                  </p>
-                </div>
-              ))}
+                リンクをコピー
+              </button>
             </div>
           </div>
-        )}
+        </div>
+
+        {/* ========== 5-AXIS TRAIT BARS ========== */}
+        <div className="bg-white rounded-2xl border border-neutral-200 p-6 mb-6">
+          <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-neutral-400 mb-4 text-center">
+            Axis Breakdown
+          </p>
+          <div className="space-y-3">
+            {(Object.keys(AXIS_LABELS) as ScoreAxis[]).map((axis) => {
+              const value = analysis.currentScores[axis];
+              const original = result.axisScores[axis];
+              const boosted = value > original;
+              return (
+                <div key={axis} className="flex items-center gap-3">
+                  <span className="text-xs text-neutral-500 w-24 text-right flex-shrink-0">
+                    {AXIS_LABELS[axis]}
+                  </span>
+                  <div className="flex-1 h-3 bg-neutral-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-1000"
+                      style={{
+                        width: `${(value / 20) * 100}%`,
+                        background: `linear-gradient(90deg, ${analysis.rank.gradient.from}, ${analysis.rank.gradient.to})`,
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm font-bold text-neutral-900 w-8 text-right tabular-nums">
+                    {value}
+                  </span>
+                  {boosted && (
+                    <span className="text-[10px] font-bold text-emerald-600 w-6">
+                      +{value - original}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ========== SUB-SCORES ========== */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+          {analysis.subScores.map((sub) => (
+            <div
+              key={sub.label}
+              className="bg-white rounded-xl border border-neutral-200 p-4 text-center"
+            >
+              <p className="text-2xl mb-1">{sub.emoji}</p>
+              <p className="text-2xl font-black text-neutral-900 tabular-nums">
+                {sub.score}
+              </p>
+              <p className="text-[10px] text-neutral-400 mt-1 leading-tight">
+                {sub.label}
+              </p>
+            </div>
+          ))}
+        </div>
 
         {/* ========== COMPARISON BANNER ========== */}
         <div className="bg-neutral-50 rounded-2xl border border-neutral-200 p-6 mb-6">

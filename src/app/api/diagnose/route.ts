@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { calculateScores } from "@/lib/scoring";
 import { buildDiagnosisPrompt } from "@/lib/prompts";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "",
@@ -16,7 +17,20 @@ const FALLBACK_DIAGNOSIS = {
 
 export async function POST(request: Request) {
   try {
-    const { answers } = await request.json();
+    // Rate limit: 5 diagnoses per minute per IP
+    const ip = getClientIp(request);
+    const { success } = rateLimit(`diagnose:${ip}`, {
+      maxRequests: 5,
+      windowMs: 60 * 1000,
+    });
+    if (!success) {
+      return NextResponse.json(
+        { error: "リクエストが多すぎます。しばらくしてから再度お試しください。" },
+        { status: 429 }
+      );
+    }
+
+    const { answers, profile } = await request.json();
 
     if (!answers || typeof answers !== "object") {
       return NextResponse.json(
@@ -31,7 +45,7 @@ export async function POST(request: Request) {
 
     if (process.env.ANTHROPIC_API_KEY) {
       try {
-        const prompt = buildDiagnosisPrompt(answers, totalScore, axisScores);
+        const prompt = buildDiagnosisPrompt(answers, totalScore, axisScores, profile);
         const response = await client.messages.create({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1000,

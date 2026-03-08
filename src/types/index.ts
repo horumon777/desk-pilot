@@ -6,11 +6,11 @@ export type ScoreAxis =
   | "maintenance";
 
 export const AXIS_LABELS: Record<ScoreAxis, string> = {
-  focus: "集中力環境",
-  ergonomics: "人体工学",
-  productivity: "生産性機器",
-  aesthetics: "審美・ブランド",
-  maintenance: "習慣・メンテナンス",
+  focus: "集中しやすさ",
+  ergonomics: "カラダへの優しさ",
+  productivity: "作業効率",
+  aesthetics: "見た目のこだわり",
+  maintenance: "整理・管理力",
 };
 
 export interface DiagnosisOption {
@@ -146,6 +146,91 @@ export interface ChatMessage {
   createdAt: string;
 }
 
+// --- User Profile ---
+export interface UserProfile {
+  ageRange: string;
+  gender: string;
+  occupation: string;
+  exerciseFrequency: string;
+  deskHoursPerDay: string;
+  budgetRange: string;
+  updatedAt: string;
+}
+
+export const PROFILE_FIELDS = [
+  {
+    key: "ageRange" as const,
+    label: "年代",
+    icon: "🎂",
+    options: [
+      { value: "20s", label: "20代" },
+      { value: "30s", label: "30代" },
+      { value: "40s", label: "40代" },
+      { value: "50s_plus", label: "50代以上" },
+    ],
+  },
+  {
+    key: "gender" as const,
+    label: "性別",
+    icon: "👤",
+    options: [
+      { value: "male", label: "男性" },
+      { value: "female", label: "女性" },
+      { value: "other", label: "その他" },
+      { value: "prefer_not", label: "回答しない" },
+    ],
+  },
+  {
+    key: "occupation" as const,
+    label: "職種",
+    icon: "💼",
+    options: [
+      { value: "engineer", label: "エンジニア・開発" },
+      { value: "designer", label: "デザイナー・クリエイティブ" },
+      { value: "marketing", label: "マーケティング・企画" },
+      { value: "sales", label: "営業・コンサル" },
+      { value: "management", label: "経営・マネジメント" },
+      { value: "freelance", label: "フリーランス" },
+      { value: "student", label: "学生" },
+      { value: "other", label: "その他" },
+    ],
+  },
+  {
+    key: "exerciseFrequency" as const,
+    label: "運動頻度",
+    icon: "🏃",
+    options: [
+      { value: "daily", label: "ほぼ毎日" },
+      { value: "weekly", label: "週1〜3回" },
+      { value: "monthly", label: "月数回程度" },
+      { value: "rarely", label: "ほとんどしない" },
+    ],
+  },
+  {
+    key: "deskHoursPerDay" as const,
+    label: "1日のデスクワーク時間",
+    icon: "⏰",
+    options: [
+      { value: "under4", label: "4時間未満" },
+      { value: "4to6", label: "4〜6時間" },
+      { value: "6to8", label: "6〜8時間" },
+      { value: "8to10", label: "8〜10時間" },
+      { value: "over10", label: "10時間以上" },
+    ],
+  },
+  {
+    key: "budgetRange" as const,
+    label: "デスク環境への予算感",
+    icon: "💰",
+    options: [
+      { value: "low", label: "コスパ重視（〜1万円）" },
+      { value: "mid", label: "バランス型（1〜3万円）" },
+      { value: "high", label: "しっかり投資（3〜5万円）" },
+      { value: "premium", label: "妥協なし（5万円〜）" },
+    ],
+  },
+];
+
 export const STORAGE_KEYS = {
   DIAGNOSIS_RESULT: "deskpilot_diagnosis_result",
   DIAGNOSIS_ANSWERS: "deskpilot_diagnosis_answers",
@@ -153,4 +238,5 @@ export const STORAGE_KEYS = {
   RECOMMEND_CACHE: "deskpilot_recommend_cache",
   USER_STYLE: "deskpilot_user_style",
   CHAT_HISTORY: "deskpilot_chat_history",
+  USER_PROFILE: "deskpilot_user_profile",
 } as const;

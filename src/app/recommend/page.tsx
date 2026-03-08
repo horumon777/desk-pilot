@@ -11,6 +11,7 @@ import {
   CATEGORY_LABELS,
   CATEGORY_ICONS,
   PurchaseRecord,
+  UserProfile,
 } from "@/types";
 import { Header } from "@/components/header";
 import { toast } from "sonner";
@@ -66,6 +67,11 @@ function RecommendContent() {
           null
         );
 
+        const profile = getStorageItem<UserProfile | null>(
+          STORAGE_KEYS.USER_PROFILE,
+          null
+        );
+
         const res = await fetch("/api/recommend", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -74,6 +80,7 @@ function RecommendContent() {
             category,
             purchaseHistory: purchaseHistory.map((p) => p.productName),
             userStyle,
+            profile,
           }),
         });
 

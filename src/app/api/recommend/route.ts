@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { buildRecommendPrompt } from "@/lib/prompts";
 import { buildAmazonSearchUrl } from "@/lib/amazon";
 import { CATEGORY_LABELS, RecommendCategory } from "@/types";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "",
@@ -10,7 +11,20 @@ const client = new Anthropic({
 
 export async function POST(request: Request) {
   try {
-    const { answers, category, purchaseHistory, userStyle } =
+    // Rate limit: 10 recommendations per minute per IP
+    const ip = getClientIp(request);
+    const { success } = rateLimit(`recommend:${ip}`, {
+      maxRequests: 10,
+      windowMs: 60 * 1000,
+    });
+    if (!success) {
+      return NextResponse.json(
+        { error: "リクエストが多すぎます。しばらくしてから再度お試しください。" },
+        { status: 429 }
+      );
+    }
+
+    const { answers, category, purchaseHistory, userStyle, profile } =
       await request.json();
 
     if (!answers || !category) {
@@ -46,7 +60,8 @@ export async function POST(request: Request) {
         category,
         categoryLabel,
         purchaseHistory,
-        userStyle
+        userStyle,
+        profile
       );
 
       const response = await client.messages.create({

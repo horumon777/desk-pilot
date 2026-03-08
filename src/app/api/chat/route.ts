@@ -1,4 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { buildChatSystemPrompt } from "@/lib/prompts";
+import { ScoreAxis, PurchaseRecord, UserProfile } from "@/types";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || "",
@@ -6,7 +9,23 @@ const client = new Anthropic({
 
 export async function POST(request: Request) {
   try {
-    const { messages, systemPrompt } = await request.json();
+    // Rate limit: 20 messages per minute per IP
+    const ip = getClientIp(request);
+    const { success } = rateLimit(`chat:${ip}`, {
+      maxRequests: 20,
+      windowMs: 60 * 1000,
+    });
+    if (!success) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "リクエストが多すぎます。しばらくしてから再度お試しください。",
+        }),
+        { status: 429, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const { messages, context } = await request.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: "Invalid messages" }), {
@@ -15,11 +34,18 @@ export async function POST(request: Request) {
       });
     }
 
-    if (!systemPrompt) {
-      return new Response(
-        JSON.stringify({ error: "Missing system prompt" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+    // Validate message length to prevent abuse
+    for (const msg of messages) {
+      if (
+        typeof msg.content !== "string" ||
+        msg.content.length > 2000 ||
+        !["user", "assistant"].includes(msg.role)
+      ) {
+        return new Response(
+          JSON.stringify({ error: "Invalid message format" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
     }
 
     if (!process.env.ANTHROPIC_API_KEY) {
@@ -28,6 +54,24 @@ export async function POST(request: Request) {
       return new Response(fallbackText, {
         headers: { "Content-Type": "text/plain; charset=utf-8" },
       });
+    }
+
+    // Build system prompt server-side from raw context data
+    let systemPrompt: string;
+    if (context && context.axisScores) {
+      systemPrompt = buildChatSystemPrompt(
+        context.totalScore ?? 0,
+        context.axisScores as Record<ScoreAxis, number>,
+        context.boostedTotalScore ?? context.totalScore ?? 0,
+        context.boostedAxisScores ?? context.axisScores,
+        (context.purchases ?? []) as PurchaseRecord[],
+        (context.weakestAxis ?? "focus") as ScoreAxis,
+        (context.profile as UserProfile) ?? null
+      );
+    } else {
+      // Fallback: minimal system prompt when no context
+      systemPrompt =
+        "あなたはデスク環境改善の専門アドバイザー「DeskPilot AI」です。20〜40代のビジネスパーソンに向けて、プロフェッショナルかつ心に刺さる言葉で回答してください。";
     }
 
     const stream = client.messages.stream({

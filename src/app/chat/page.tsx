@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback, Fragment } from "rea
 import { useRouter } from "next/navigation";
 import { getStorageItem, setStorageItem, removeStorageItem } from "@/lib/storage";
 import { calculatePurchaseBoosts } from "@/lib/purchase-boost";
-import { buildChatSystemPrompt } from "@/lib/prompts";
+
 import {
   STORAGE_KEYS,
   DiagnosisResult,
@@ -12,6 +12,7 @@ import {
   ChatMessage,
   ScoreAxis,
   AXIS_LABELS,
+  UserProfile,
 } from "@/types";
 import { Header } from "@/components/header";
 import { toast } from "sonner";
@@ -259,20 +260,29 @@ export default function ChatPage() {
     // Focus back on input
     inputRef.current?.focus();
 
-    // Build system prompt
-    const systemPrompt = buildChatSystemPrompt(
-      result.totalScore,
-      result.axisScores,
-      context.boost.boostedTotalScore,
-      context.boost.boostedAxisScores,
-      purchases,
-      context.weakestAxis
-    );
-
     // Prepare API messages (limit to recent)
     const apiMessages = updatedMessages
       .slice(-MAX_API_MESSAGES)
       .map((m) => ({ role: m.role, content: m.content }));
+
+    // Send raw data to server — system prompt is built server-side
+    const userProfile = getStorageItem<UserProfile | null>(
+      STORAGE_KEYS.USER_PROFILE,
+      null
+    );
+    const chatContext = {
+      totalScore: result.totalScore,
+      axisScores: result.axisScores,
+      boostedTotalScore: context.boost.boostedTotalScore,
+      boostedAxisScores: context.boost.boostedAxisScores,
+      purchases: purchases.map((p) => ({
+        productName: p.productName,
+        brand: p.brand,
+        category: p.category,
+      })),
+      weakestAxis: context.weakestAxis,
+      profile: userProfile,
+    };
 
     // Placeholder assistant message
     const assistantMessage: ChatMessage = {
@@ -287,7 +297,7 @@ export default function ChatPage() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages, systemPrompt }),
+        body: JSON.stringify({ messages: apiMessages, context: chatContext }),
       });
 
       if (!res.ok) throw new Error("Failed to fetch");
