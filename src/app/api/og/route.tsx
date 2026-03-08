@@ -55,6 +55,8 @@ function getRankFromScore(score: number): string {
   return "D";
 }
 
+// desk-bg.jpg is served from /public and fetched via full URL in edge runtime
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
@@ -74,6 +76,22 @@ export async function GET(req: NextRequest) {
     m: parseInt(searchParams.get("m") || "0", 10),
   };
 
+  // Fetch desk background image from public folder
+  const host = req.headers.get("host") || "localhost:3000";
+  const protocol = host.startsWith("localhost") ? "http" : "https";
+  const deskImageUrl = `${protocol}://${host}/desk-bg.jpg`;
+  let deskImageSrc = "";
+  try {
+    const res = await fetch(deskImageUrl);
+    const buf = await res.arrayBuffer();
+    const uint8 = new Uint8Array(buf);
+    let binary = "";
+    for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
+    deskImageSrc = `data:image/jpeg;base64,${btoa(binary)}`;
+  } catch {
+    // fallback: no image
+  }
+
   return new ImageResponse(
     (
       <div
@@ -87,11 +105,37 @@ export async function GET(req: NextRequest) {
           justifyContent: "center",
           gap: "40px",
           padding: "48px",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
+        {/* Desk background image */}
+        {deskImageSrc && (
+          <img
+            src={deskImageSrc}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center",
+            }}
+          />
+        )}
+        {/* White overlay */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(245,245,245,0.88)",
+            display: "flex",
+          }}
+        />
         {/* Left: Rank Card */}
         <div
           style={{
+            position: "relative",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -222,6 +266,7 @@ export async function GET(req: NextRequest) {
         {/* Right: Axis + Branding */}
         <div
           style={{
+            position: "relative",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",

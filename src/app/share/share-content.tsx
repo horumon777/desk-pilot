@@ -37,16 +37,37 @@ function ShareCard() {
     m: parseInt(searchParams.get("m") || "0", 10),
   };
 
+  const DESK_IMAGE = "/desk-bg.jpg";
+
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
+      {/* Background desk image */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `url(${DESK_IMAGE})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+      {/* White overlay */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "rgba(255,255,255,0.82)",
+        }}
+      />
+
       {/* Header */}
-      <header className="border-b border-neutral-100 px-5 h-14 flex items-center justify-center">
+      <header className="relative z-10 border-b border-neutral-200/60 px-5 h-14 flex items-center justify-center backdrop-blur-sm bg-white/60">
         <Link href="/" className="text-lg font-bold tracking-tight">
           DESK AI
         </Link>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-5 py-12">
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 py-12">
         <div className="w-full max-w-md">
           {/* Rank Card */}
           <div
@@ -156,8 +177,8 @@ function ShareCard() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-neutral-100 py-4 px-5 text-center">
-        <p className="text-neutral-300 text-xs">
+      <footer className="relative z-10 border-t border-neutral-200/60 py-4 px-5 text-center backdrop-blur-sm bg-white/60">
+        <p className="text-neutral-400 text-xs">
           &copy; 2026 DESK AI. All rights reserved.
         </p>
       </footer>
