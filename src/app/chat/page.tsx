@@ -460,7 +460,7 @@ export default function ChatPage() {
                     : "bg-neutral-50 border border-neutral-200 text-neutral-700"
                 }`}
               >
-                <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+                <div className="text-sm leading-relaxed whitespace-pre-wrap wrap-break-word">
                   {renderMessageContent(msg.content, msg.role === "user")}
                   {/* Streaming cursor */}
                   {msg.role === "assistant" &&
@@ -507,7 +507,7 @@ export default function ChatPage() {
         )}
 
         {/* Input Area */}
-        <div className="bg-white border border-neutral-200 rounded-2xl p-3 shadow-sm">
+        <div className="bg-white border border-neutral-200 rounded-2xl p-3 shadow-xs">
           <div className="flex items-end gap-2">
             <textarea
               ref={inputRef}
@@ -516,7 +516,7 @@ export default function ChatPage() {
               onKeyDown={handleKeyDown}
               placeholder="デスク環境について質問する..."
               rows={1}
-              className="flex-1 resize-none bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none min-h-[36px] max-h-[120px] py-1.5"
+              className="flex-1 resize-none bg-transparent text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-hidden min-h-[36px] max-h-[120px] py-1.5"
               style={{
                 height: "auto",
                 overflow: input.split("\n").length > 3 ? "auto" : "hidden",
@@ -531,7 +531,7 @@ export default function ChatPage() {
             <button
               onClick={handleSend}
               disabled={!input.trim() || isStreaming}
-              className="flex-shrink-0 w-9 h-9 rounded-full bg-neutral-900 text-white flex items-center justify-center hover:bg-neutral-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="shrink-0 w-9 h-9 rounded-full bg-neutral-900 text-white flex items-center justify-center hover:bg-neutral-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <svg
                 className="w-4 h-4"

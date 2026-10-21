@@ -446,7 +446,7 @@ export default function HistoryPage() {
               timeline.currentScore < 85 && (
                 <div className="bg-blue-50 rounded-xl border border-blue-200 p-4 mt-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
                       <svg
                         className="w-3.5 h-3.5 text-blue-600"
                         fill="none"
@@ -482,7 +482,7 @@ export default function HistoryPage() {
             {timeline.currentScore >= 85 && (
               <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-4 mt-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
                     <span className="text-sm">🏆</span>
                   </div>
                   <p className="text-sm text-emerald-800 font-medium">

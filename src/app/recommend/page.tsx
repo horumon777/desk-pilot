@@ -173,7 +173,7 @@ function RecommendContent() {
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
-                className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all ${
+                className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all ${
                   activeCategory === cat
                     ? "bg-neutral-900 text-white"
                     : "bg-neutral-50 text-neutral-500 border border-neutral-200 hover:border-neutral-300 hover:text-neutral-900"
@@ -225,13 +225,13 @@ function RecommendContent() {
                 key={item.rank}
                 className={`bg-white rounded-2xl border transition-colors p-5 ${
                   item.rank <= 3
-                    ? "border-neutral-300 shadow-sm"
+                    ? "border-neutral-300 shadow-xs"
                     : "border-neutral-200 hover:border-neutral-300"
                 }`}
               >
                 <div className="flex gap-4">
                   {/* Rank */}
-                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-neutral-100 border border-neutral-200">
+                  <div className="shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-neutral-100 border border-neutral-200">
                     <span
                       className={`text-sm font-bold ${
                         item.rank <= 3 ? "text-neutral-900" : "text-neutral-400"

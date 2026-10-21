@@ -345,7 +345,7 @@ export default function ResultPage() {
             )}
 
             <div className="mb-6">
-              <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-5 py-2.5 mb-3">
+              <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-xs rounded-full px-5 py-2.5 mb-3">
                 <span className="text-2xl font-black text-white">
                   {analysis.rank.rank}ランク
                 </span>
@@ -363,7 +363,7 @@ export default function ResultPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
               <button
                 onClick={handleShareX}
-                className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
+                className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-xs text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-white/30 transition-colors"
               >
                 <svg
                   className="w-4 h-4"
@@ -409,7 +409,7 @@ export default function ResultPage() {
               const boosted = value > original;
               return (
                 <div key={axis} className="flex items-center gap-3">
-                  <span className="text-xs text-neutral-500 w-24 text-right flex-shrink-0">
+                  <span className="text-xs text-neutral-500 w-24 text-right shrink-0">
                     {AXIS_LABELS[axis]}
                   </span>
                   <div className="flex-1 h-3 bg-neutral-100 rounded-full overflow-hidden">
