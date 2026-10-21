@@ -64,8 +64,8 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Subtle grid background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#f5f5f5_1px,transparent_1px),linear-gradient(to_bottom,#f5f5f5_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-60" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-neutral-100/80 to-transparent rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#f5f5f5_1px,transparent_1px),linear-gradient(to_bottom,#f5f5f5_1px,transparent_1px)] bg-size-[4rem_4rem] opacity-60" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-linear-to-b from-neutral-100/80 to-transparent rounded-full blur-3xl" />
 
         <div className="relative max-w-5xl mx-auto px-5 pt-24 pb-20 md:pt-32 md:pb-28">
           <div className="max-w-2xl">
@@ -79,7 +79,7 @@ export default function Home() {
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-neutral-900 leading-[1.05]">
               デスクを変えれば、
               <br />
-              <span className="bg-gradient-to-r from-neutral-900 via-neutral-600 to-neutral-900 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-neutral-900 via-neutral-600 to-neutral-900 bg-clip-text text-transparent">
                 仕事が変わる。
               </span>
             </h1>
@@ -209,7 +209,7 @@ export default function Home() {
                 {i < STEPS.length - 1 && (
                   <div className="hidden md:block absolute top-8 left-[calc(50%+2rem)] w-[calc(100%-4rem)] h-px bg-neutral-200" />
                 )}
-                <div className="relative bg-white rounded-2xl border border-neutral-100 p-5 hover:border-neutral-200 hover:shadow-sm transition-all">
+                <div className="relative bg-white rounded-2xl border border-neutral-100 p-5 hover:border-neutral-200 hover:shadow-xs transition-all">
                   <span className="text-3xl font-bold text-neutral-100 group-hover:text-neutral-200 transition-colors">
                     {step.num}
                   </span>
@@ -242,7 +242,7 @@ export default function Home() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="group flex items-start gap-4 bg-white rounded-2xl border border-neutral-100 p-5 hover:border-neutral-200 hover:shadow-sm transition-all"
+                className="group flex items-start gap-4 bg-white rounded-2xl border border-neutral-100 p-5 hover:border-neutral-200 hover:shadow-xs transition-all"
               >
                 <span className="text-2xl mt-0.5 group-hover:scale-110 transition-transform">
                   {f.icon}

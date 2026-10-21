@@ -123,7 +123,7 @@ export default function ProfilePage() {
                       onClick={() => handleSelect(field.key, option.value)}
                       className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                         isSelected
-                          ? "bg-neutral-900 text-white border-2 border-neutral-900 shadow-sm"
+                          ? "bg-neutral-900 text-white border-2 border-neutral-900 shadow-xs"
                           : "bg-white text-neutral-700 border-2 border-neutral-200 hover:border-neutral-400"
                       }`}
                     >

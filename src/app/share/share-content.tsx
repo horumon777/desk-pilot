@@ -61,7 +61,7 @@ function ShareCard() {
       />
 
       {/* Header */}
-      <header className="relative z-10 border-b border-neutral-200/60 px-5 h-14 flex items-center justify-center backdrop-blur-sm bg-white/60">
+      <header className="relative z-10 border-b border-neutral-200/60 px-5 h-14 flex items-center justify-center backdrop-blur-xs bg-white/60">
         <Link href="/" className="text-lg font-bold tracking-tight">
           DESK AI
         </Link>
@@ -114,7 +114,7 @@ function ShareCard() {
             <div className="space-y-3">
               {Object.entries(axes).map(([key, value]) => (
                 <div key={key} className="flex items-center gap-3">
-                  <span className="text-xs text-neutral-500 w-24 text-right flex-shrink-0">
+                  <span className="text-xs text-neutral-500 w-24 text-right shrink-0">
                     {AXIS_LABELS[key]}
                   </span>
                   <div className="flex-1 h-2 bg-neutral-200 rounded-full overflow-hidden">
@@ -177,7 +177,7 @@ function ShareCard() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-neutral-200/60 py-4 px-5 text-center backdrop-blur-sm bg-white/60">
+      <footer className="relative z-10 border-t border-neutral-200/60 py-4 px-5 text-center backdrop-blur-xs bg-white/60">
         <p className="text-neutral-400 text-xs">
           &copy; 2026 DESK AI. All rights reserved.
         </p>

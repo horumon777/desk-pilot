@@ -213,7 +213,7 @@ export default function DiagnosePage() {
                       ? "border-neutral-900 bg-neutral-900 text-white scale-[1.02] shadow-lg shadow-neutral-900/10"
                       : isOther
                         ? "border-neutral-100 bg-neutral-50 text-neutral-300 scale-[0.98] opacity-50"
-                        : "border-neutral-100 bg-white hover:border-neutral-300 hover:shadow-sm active:scale-[0.98]"
+                        : "border-neutral-100 bg-white hover:border-neutral-300 hover:shadow-xs active:scale-[0.98]"
                   }`}
                   onClick={() => handleAnswer(option.id)}
                   style={{
@@ -221,7 +221,7 @@ export default function DiagnosePage() {
                   }}
                 >
                   <span
-                    className={`text-2xl flex-shrink-0 transition-transform duration-300 ${
+                    className={`text-2xl shrink-0 transition-transform duration-300 ${
                       isSelected ? "scale-110" : ""
                     }`}
                   >
@@ -252,7 +252,7 @@ export default function DiagnosePage() {
                     </p>
                   </div>
                   {isSelected && (
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <svg
                         className="w-5 h-5 text-white"
                         fill="none"
